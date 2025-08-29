@@ -1,26 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Pong Game - Enhanced</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong Game - Édition Personnalisée</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>✨ Pong Game ✨</h1>
-    <div id="game-container">
-        <canvas id="pong-canvas" width="800" height="500"></canvas>
-        <div id="ui">
-            <div id="score">
-                <span id="player-score">0</span>
-                <span id="divider">:</span>
-                <span id="ai-score">0</span>
+    <div class="container">
+        <header>
+            <h1>✨ PONG ULTRA ✨</h1>
+        </header>
+        
+        <div class="game-area">
+            <div id="game-container">
+                <canvas id="pong-canvas" width="800" height="500"></canvas>
+                <div id="ui">
+                    <div id="score">
+                        <span id="player-score">0</span>
+                        <span id="divider">:</span>
+                        <span id="ai-score">0</span>
+                    </div>
+                    <button id="start-btn" class="btn">Start Game</button>
+                    <div id="game-message"></div>
+                </div>
             </div>
-            <button id="start-btn" class="btn">Start Game</button>
-            <div id="game-message"></div>
+            
+            <div class="customization-panel">
+                <h2 class="panel-title">OPTIONS</h2>
+                
+                <div class="option-group">
+                    <label for="ball-speed">Vitesse de la balle:</label>
+                    <input type="range" id="ball-speed" min="1" max="10" value="5">
+                </div>
+                
+                <div class="option-group">
+                    <label for="ai-difficulty">Difficulté de l'IA:</label>
+                    <select id="ai-difficulty">
+                        <option value="easy">Facile</option>
+                        <option value="medium" selected>Moyen</option>
+                        <option value="hard">Difficile</option>
+                        <option value="impossible">Impossible</option>
+                    </select>
+                </div>
+                
+                <div class="option-group">
+                    <label for="paddle-size">Taille des raquettes:</label>
+                    <input type="range" id="paddle-size" min="80" max="150" value="110">
+                </div>
+                
+                <div class="option-group">
+                    <label for="theme">Thème visuel:</label>
+                    <select id="theme">
+                        <option value="default" selected>Néon Bleu</option>
+                        <option value="red">Néon Rouge</option>
+                        <option value="green">Néon Vert</option>
+                        <option value="purple">Néon Violet</option>
+                    </select>
+                </div>
+                
+                <button id="apply-btn" class="btn">Appliquer les changements</button>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h2>Comment jouer</h2>
+            <ul>
+                <li>Déplacez votre souris pour contrôler la raquette gauche</li>
+                <li>Le premier à atteindre 10 points gagne la partie</li>
+                <li>La balle accélère après chaque rebond sur une raquette</li>
+                <li>Utilisez les options pour personnaliser votre expérience de jeu</li>
+            </ul>
         </div>
     </div>
+
     <audio id="hit-sound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_115b9f3b3a.mp3"></audio>
     <audio id="score-sound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_115b9f3b3a.mp3"></audio>
+    
     <script src="game.js"></script>
 </body>
 </html>
