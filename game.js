@@ -18,7 +18,7 @@ let PADDLE_WIDTH = 14;
 let PADDLE_HEIGHT = parseInt(paddleSizeSlider.value);
 const BALL_RADIUS = 14;
 const PLAYER_X = 34;
-const AI_X = canvas.width - 34 - PADDLE_WIDTH;
+let AI_X = canvas.width - 34 - PADDLE_WIDTH;
 
 let playerY = (canvas.height - PADDLE_HEIGHT) / 2;
 let aiY = (canvas.height - PADDLE_HEIGHT) / 2;
@@ -45,6 +45,40 @@ let themeColors = {
 };
 let currentTheme = "default";
 
+// Écouteur d'événement pour le bouton Appliquer
+applyBtn.addEventListener('click', applySettings);
+
+function applySettings() {
+    console.log("Application des paramètres...");
+    
+    // Update paddle size
+    PADDLE_HEIGHT = parseInt(paddleSizeSlider.value);
+    console.log("Taille des raquettes:", PADDLE_HEIGHT);
+    
+    // Update ball speed
+    baseBallSpeed = parseInt(ballSpeedSlider.value);
+    console.log("Vitesse de la balle:", baseBallSpeed);
+    
+    // Update theme
+    currentTheme = themeSelect.value;
+    console.log("Thème sélectionné:", currentTheme);
+    
+    // Recalculer la position de l'IA
+    AI_X = canvas.width - 34 - PADDLE_WIDTH;
+    
+    // Reset positions
+    playerY = (canvas.height - PADDLE_HEIGHT) / 2;
+    aiY = (canvas.height - PADDLE_HEIGHT) / 2;
+    
+    // Redraw with new settings
+    draw();
+    
+    messageElem.textContent = "Paramètres appliqués!";
+    setTimeout(() => {
+        if (!gameRunning) messageElem.textContent = "";
+    }, 2000);
+}
+
 canvas.addEventListener('mousemove', function(e) {
     if (!gameRunning) return;
     const rect = canvas.getBoundingClientRect();
@@ -68,31 +102,6 @@ startBtn.addEventListener('click', () => {
     messageElem.textContent = "";
     gameLoop();
 });
-
-applyBtn.addEventListener('click', applySettings);
-
-function applySettings() {
-    // Update paddle size
-    PADDLE_HEIGHT = parseInt(paddleSizeSlider.value);
-    
-    // Update ball speed
-    baseBallSpeed = parseInt(ballSpeedSlider.value);
-    
-    // Update theme
-    currentTheme = themeSelect.value;
-    
-    // Reset positions
-    playerY = (canvas.height - PADDLE_HEIGHT) / 2;
-    aiY = (canvas.height - PADDLE_HEIGHT) / 2;
-    
-    // Redraw with new settings
-    draw();
-    
-    messageElem.textContent = "Paramètres appliqués!";
-    setTimeout(() => {
-        if (!gameRunning) messageElem.textContent = "";
-    }, 2000);
-}
 
 function update() {
     if (!gameRunning) return;
