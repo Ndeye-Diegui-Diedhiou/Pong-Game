@@ -7,8 +7,15 @@ const startBtn = document.getElementById('start-btn');
 const hitSound = document.getElementById('hit-sound');
 const scoreSound = document.getElementById('score-sound');
 
-const PADDLE_WIDTH = 14;
-const PADDLE_HEIGHT = 110;
+// Options elements
+const ballSpeedSlider = document.getElementById('ball-speed');
+const aiDifficultySelect = document.getElementById('ai-difficulty');
+const paddleSizeSlider = document.getElementById('paddle-size');
+const themeSelect = document.getElementById('theme');
+const applyBtn = document.getElementById('apply-btn');
+
+let PADDLE_WIDTH = 14;
+let PADDLE_HEIGHT = parseInt(paddleSizeSlider.value);
 const BALL_RADIUS = 14;
 const PLAYER_X = 34;
 const AI_X = canvas.width - 34 - PADDLE_WIDTH;
@@ -18,8 +25,9 @@ let aiY = (canvas.height - PADDLE_HEIGHT) / 2;
 
 let ballX = canvas.width / 2;
 let ballY = canvas.height / 2;
-let ballSpeedX = 6;
-let ballSpeedY = 4;
+let baseBallSpeed = parseInt(ballSpeedSlider.value);
+let ballSpeedX = baseBallSpeed;
+let ballSpeedY = baseBallSpeed * 0.7;
 
 let playerScore = 0;
 let aiScore = 0;
@@ -27,6 +35,15 @@ let aiScore = 0;
 const WIN_SCORE = 10;
 let gameRunning = false;
 let gameOver = false;
+
+// Theme colors
+let themeColors = {
+    default: { primary: "#16e0bd", secondary: "#1f8ef1", ball: "#ffeb3b" },
+    red: { primary: "#ff3e7c", secondary: "#ff0000", ball: "#ff9999" },
+    green: { primary: "#00ff99", secondary: "#00cc66", ball: "#ccffcc" },
+    purple: { primary: "#bb86fc", secondary: "#6200ea", ball: "#e0b0ff" }
+};
+let currentTheme = "default";
 
 canvas.addEventListener('mousemove', function(e) {
     if (!gameRunning) return;
@@ -51,6 +68,31 @@ startBtn.addEventListener('click', () => {
     messageElem.textContent = "";
     gameLoop();
 });
+
+applyBtn.addEventListener('click', applySettings);
+
+function applySettings() {
+    // Update paddle size
+    PADDLE_HEIGHT = parseInt(paddleSizeSlider.value);
+    
+    // Update ball speed
+    baseBallSpeed = parseInt(ballSpeedSlider.value);
+    
+    // Update theme
+    currentTheme = themeSelect.value;
+    
+    // Reset positions
+    playerY = (canvas.height - PADDLE_HEIGHT) / 2;
+    aiY = (canvas.height - PADDLE_HEIGHT) / 2;
+    
+    // Redraw with new settings
+    draw();
+    
+    messageElem.textContent = "Paramètres appliqués!";
+    setTimeout(() => {
+        if (!gameRunning) messageElem.textContent = "";
+    }, 2000);
+}
 
 function update() {
     if (!gameRunning) return;
@@ -115,12 +157,31 @@ function update() {
         checkWin();
     }
 
-    // AI movement (simple)
+    // AI movement based on difficulty
     let aiCenter = aiY + PADDLE_HEIGHT / 2;
+    let aiSpeed;
+    
+    switch(aiDifficultySelect.value) {
+        case 'easy':
+            aiSpeed = 4;
+            break;
+        case 'medium':
+            aiSpeed = 5;
+            break;
+        case 'hard':
+            aiSpeed = 6;
+            break;
+        case 'impossible':
+            aiSpeed = 7;
+            break;
+        default:
+            aiSpeed = 5;
+    }
+    
     if (aiCenter < ballY - 24) {
-        aiY += Math.min(7, ballY - aiCenter);
+        aiY += Math.min(aiSpeed, ballY - aiCenter);
     } else if (aiCenter > ballY + 24) {
-        aiY -= Math.min(7, aiCenter - ballY);
+        aiY -= Math.min(aiSpeed, aiCenter - ballY);
     }
     aiY = Math.max(0, Math.min(canvas.height - PADDLE_HEIGHT, aiY));
 }
@@ -129,8 +190,8 @@ function resetBall(scoredBy) {
     ballX = canvas.width / 2;
     ballY = canvas.height / 2;
     let direction = (scoredBy === 'player') ? 1 : -1;
-    ballSpeedX = direction * (6 + Math.random() * 2);
-    ballSpeedY = (Math.random() < 0.5 ? 1 : -1) * (3 + Math.random() * 2);
+    ballSpeedX = direction * (baseBallSpeed + Math.random() * 2);
+    ballSpeedY = (Math.random() < 0.5 ? 1 : -1) * (baseBallSpeed * 0.7 + Math.random() * 2);
 }
 
 function checkWin() {
@@ -138,11 +199,11 @@ function checkWin() {
         gameOver = true;
         gameRunning = false;
         if (playerScore > aiScore) {
-            messageElem.textContent = "🎉 You Win! 🎉";
+            messageElem.textContent = "🎉 Vous avez gagné! 🎉";
         } else {
-            messageElem.textContent = "😢 AI Wins! Try Again!";
+            messageElem.textContent = "😢 L'IA a gagné! Essayez encore!";
         }
-        startBtn.textContent = "Restart Game";
+        startBtn.textContent = "Rejouer";
         startBtn.style.display = "inline-block";
     }
 }
@@ -153,7 +214,7 @@ function draw() {
     // Background animation - subtle moving gradient
     let gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
     gradient.addColorStop(0, "#232526");
-    gradient.addColorStop(1, "#16e0bd");
+    gradient.addColorStop(1, themeColors[currentTheme].primary);
     ctx.fillStyle = gradient;
     ctx.globalAlpha = 0.16;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -161,9 +222,9 @@ function draw() {
 
     // Middle dashed line
     ctx.setLineDash([18, 15]);
-    ctx.strokeStyle = "#16e0bd";
+    ctx.strokeStyle = themeColors[currentTheme].primary;
     ctx.lineWidth = 4;
-    ctx.shadowColor = "#16e0bd";
+    ctx.shadowColor = themeColors[currentTheme].primary;
     ctx.shadowBlur = 10;
     ctx.beginPath();
     ctx.moveTo(canvas.width / 2, 0);
@@ -173,13 +234,11 @@ function draw() {
     ctx.shadowBlur = 0;
 
     // Draw paddles with glow and gradient
-    drawPaddle(PLAYER_X, playerY, "#00fff7", "#16e0bd");
-    drawPaddle(AI_X, aiY, "#ff3e7c", "#f8ff50");
+    drawPaddle(PLAYER_X, playerY, themeColors[currentTheme].primary, themeColors[currentTheme].secondary);
+    drawPaddle(AI_X, aiY, themeColors[currentTheme].secondary, themeColors[currentTheme].primary);
 
     // Draw ball with glow
     drawBall(ballX, ballY);
-
-    // Score is drawn in HTML (top center)
 }
 
 function drawPaddle(x, y, color1, color2) {
@@ -196,14 +255,14 @@ function drawPaddle(x, y, color1, color2) {
 
 function drawBall(x, y) {
     ctx.save();
-    ctx.shadowColor = "#fff";
+    ctx.shadowColor = themeColors[currentTheme].ball;
     ctx.shadowBlur = 20;
     ctx.beginPath();
     ctx.arc(x, y, BALL_RADIUS, 0, Math.PI * 2);
     let ballGrad = ctx.createRadialGradient(x, y, 3, x, y, BALL_RADIUS);
     ballGrad.addColorStop(0, "#fff");
-    ballGrad.addColorStop(0.4, "#ffeb3b");
-    ballGrad.addColorStop(1, "#16e0bd");
+    ballGrad.addColorStop(0.4, themeColors[currentTheme].ball);
+    ballGrad.addColorStop(1, themeColors[currentTheme].primary);
     ctx.fillStyle = ballGrad;
     ctx.fill();
     ctx.restore();
@@ -212,7 +271,6 @@ function drawBall(x, y) {
 // Ball glow effect when hit
 function glowBall() {
     let origRadius = BALL_RADIUS;
-    let grow = true;
     let frame = 0;
     function animateGlow() {
         if (frame > 5) return;
@@ -221,8 +279,8 @@ function glowBall() {
         ctx.globalAlpha = 0.4;
         ctx.beginPath();
         ctx.arc(ballX, ballY, origRadius + frame * 2, 0, Math.PI * 2);
-        ctx.fillStyle = "#FFEB3B";
-        ctx.shadowColor = "#FFEB3B";
+        ctx.fillStyle = themeColors[currentTheme].ball;
+        ctx.shadowColor = themeColors[currentTheme].ball;
         ctx.shadowBlur = 20 + frame * 4;
         ctx.fill();
         ctx.restore();
